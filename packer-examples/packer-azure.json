@@ -1,0 +1,59 @@
+{
+    "variables": {
+            "client_id": "CLIENT_ID",
+            "client_secret": "CLIENT_SECRET",
+            "subscription_id": "SUB_ID",
+            "resource_group": "RESOURCE_GROUP"
+    },
+    "builders": [
+        {
+            "type": "azure-arm",
+            "client_id": "{{user `client_id`}}",
+            "client_secret": "{{user `client_secret`}}",
+            "subscription_id": "{{user `subscription_id`}}",
+            "build_resource_group_name": "{{user `resource_group`}}",
+            "managed_image_resource_group_name": "{{user `resource_group`}}",
+            "managed_image_name": "packer-booksite-{{timestamp}}",
+
+            "os_type": "Linux",
+            "image_publisher": "Canonical",
+            "image_offer": "UbuntuServer",
+            "image_sku": "18.04-LTS",
+
+            "azure_tags": {
+                "role": "web",
+                "team": "frontend"
+            },
+
+            "vm_size": "Standard_A1_V2"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline_shebang": "/bin/sh -x",
+            "inline": [
+                "mkdir -p /var/www/html",
+                "chown -R packer:packer /var/www/html"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "website/",
+            "destination": "/var/www/html/"
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline_shebang": "/bin/sh -x",
+            "script": "deploy.sh"
+        },
+        {
+            "type": "shell",
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline_shebang": "/bin/sh -x",
+            "inline": [ "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync" ]
+        }
+    ]
+}

@@ -1,0 +1,35 @@
+{
+    "builders": [
+        {
+            "type": "googlecompute",
+            "project_id": "<PROJECT_ID>",
+            "account_file": "account.json",
+            "source_image_family": "ubuntu-2004-lts",
+            "zone": "us-central1-f",
+            "ssh_username": "root",
+            "image_name": "booksite-packer",
+            "image_description": "Web server for book application landing page",
+            "image_labels": {
+                "role": "web",
+                "team": "frontend"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "mkdir -p /var/www/html"
+                ]
+        },
+        {
+            "type": "file",
+            "source": "website/",
+            "destination": "/var/www/html/"
+        },
+        {
+            "type": "shell",
+            "script": "deploy.sh"
+        }
+    ]
+}
